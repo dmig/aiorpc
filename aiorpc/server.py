@@ -94,8 +94,8 @@ async def _send_error(conn, exception, error, msg_id):
             error, conn.writer.get_extra_info('peername')
         )
     except Exception as e:
-        _logger.error("Exception %s raised when _send_error %s to %s",
-            e, error, conn.writer.get_extra_info("peername")
+        _logger.exception("Exception raised when _send_error %s to %s",
+            error, conn.writer.get_extra_info("peername")
         )
 
 
@@ -111,8 +111,8 @@ async def _send_result(conn, result, msg_id):
         _logger.error("Timeout when _send_result %s to %s",
             result, conn.writer.get_extra_info('peername'))
     except Exception as e:
-        _logger.error("Exception %s raised when _send_result %s to %s",
-            e, result, conn.writer.get_extra_info("peername")
+        _logger.exception("Exception raised when _send_result %s to %s",
+            result, conn.writer.get_extra_info("peername")
         )
 
 
@@ -177,7 +177,7 @@ async def serve(reader, writer):
             msg_id, method, args, method_name = _parse_request(req)
             _logger.debug('parsing completed: %s', req)
         except Exception as e:
-            _logger.error("Exception %s raised when _parse_request %s", e, req)
+            _logger.exception("Exception raised when _parse_request %s", req)
 
             # skip the rest of iteration code since we already got an error
             continue
@@ -191,7 +191,7 @@ async def serve(reader, writer):
                 ret = await asyncio.wait_for(ret, _timeout)
             _logger.debug('calling %s completed. result: %s', method, ret)
         except Exception as e:
-            _logger.error("Caught Exception in `%s`. %s: %s", method_name, type(e).__name__, e)
+            _logger.exception("Caught Exception in `%s`", method_name)
             await _send_error(conn, type(e).__name__, str(e), msg_id)
             _logger.debug('sending exception %e completed', e)
         else:
