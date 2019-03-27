@@ -89,11 +89,11 @@ async def _send_error(conn, exception, error, msg_id):
     try:
         await conn.sendall(msgpack.packb(response, encoding=_pack_encoding, **_pack_params),
                            _timeout)
-    except asyncio.TimeoutError as te:
+    except asyncio.TimeoutError:
         _logger.error("Timeout when _send_error %s to %s",
             error, conn.writer.get_extra_info('peername')
         )
-    except Exception as e:
+    except Exception:
         _logger.exception("Exception raised when _send_error %s to %s",
             error, conn.writer.get_extra_info("peername")
         )
@@ -107,10 +107,10 @@ async def _send_result(conn, result, msg_id):
         ret = msgpack.packb(response, encoding=_pack_encoding, **_pack_params)
         await conn.sendall(ret, _timeout)
         _logger.debug('sendall completed')
-    except asyncio.TimeoutError as te:
+    except asyncio.TimeoutError:
         _logger.error("Timeout when _send_result %s to %s",
             result, conn.writer.get_extra_info('peername'))
-    except Exception as e:
+    except Exception:
         _logger.exception("Exception raised when _send_result %s to %s",
             result, conn.writer.get_extra_info("peername")
         )
@@ -148,12 +148,12 @@ async def serve(reader, writer):
         req = None
         try:
             req = await conn.recvall(_timeout)
-        except asyncio.TimeoutError as te:
+        except asyncio.TimeoutError:
             await asyncio.sleep(3)
             _logger.warning("Client did not send any data before timeout. Closing connection...")
             conn.close()
             continue
-        except IOError as ie:
+        except IOError:
             break
         except Exception as e:
             conn.reader.set_exception(e)
@@ -177,7 +177,7 @@ async def serve(reader, writer):
             msg_id, method, args, method_name = _parse_request(req)
             _logger.debug('parsing completed: %s', req)
         except Exception as e:
-            _logger.exception("Exception raised when _parse_request %s", req)
+            _logger.exception("Exception raised in _parse_request(%s)", req)
 
             # skip the rest of iteration code since we already got an error
             continue
@@ -193,7 +193,7 @@ async def serve(reader, writer):
         except Exception as e:
             _logger.exception("Caught Exception in `%s`", method_name)
             await _send_error(conn, type(e).__name__, str(e), msg_id)
-            _logger.debug('sending exception %e completed', e)
+            _logger.debug('sending exception %s completed', e)
         else:
             _logger.debug('sending result: %s', ret)
             await _send_result(conn, ret, msg_id)
