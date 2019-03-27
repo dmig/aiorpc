@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import time
 import msgpack
-import datetime
 
 from aiorpc.constants import MSGPACKRPC_REQUEST, MSGPACKRPC_RESPONSE
 from aiorpc.exceptions import MethodNotFoundError, RPCProtocolError, MethodRegisteredError
@@ -168,7 +168,7 @@ async def serve(reader, writer):
             except Exception as e:
                 _logger.error("Error when receiving req: %s", e)
 
-        req_start = datetime.datetime.now()
+        req_start = time.time()
         method = None
         msg_id = None
         args = None
@@ -199,5 +199,5 @@ async def serve(reader, writer):
             await _send_result(conn, ret, msg_id)
             _logger.debug('sending result %s completed', ret)
 
-        req_end = datetime.datetime.now()
-        _logger.info("Method `%s` took %fms", method_name, (req_end - req_start).microseconds / 1000)
+        req_end = time.time()
+        _logger.info("Method `%s` took %fms", method_name, (req_end - req_start) * 1000)
