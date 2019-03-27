@@ -6,7 +6,7 @@ import msgpack
 from aiorpc.connection import Connection
 from aiorpc.log import rootLogger
 from aiorpc.constants import MSGPACKRPC_RESPONSE, MSGPACKRPC_REQUEST
-from aiorpc.exceptions import RPCProtocolError, RPCError, EnhancedRPCError
+from aiorpc.exceptions import RPCProtocolError, RPCError, EnhancedRPCError, MethodNotFoundError
 
 __all__ = ['RPCClient']
 
@@ -148,6 +148,8 @@ class RPCClient:
             raise RPCError('Invalid Message ID')
 
         if error and len(error) == 2:
+            if error[0] == 'MethodNotFoundError':
+                raise MethodNotFoundError(error[1])
             raise EnhancedRPCError(*error)
         elif error:
             raise RPCError(error)

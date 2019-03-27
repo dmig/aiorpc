@@ -126,9 +126,6 @@ def _parse_request(req):
     if len(_method_soup) == 1:
         method = _methods.get(method_name)
     else:
-
-    if not method:
-        raise MethodNotFoundError("No such method {}".format(method_name))
         method = getattr(_class_methods.get(_method_soup[0]), _method_soup[1], None)
 
     return msg_id, method, args, method_name
@@ -184,6 +181,9 @@ async def serve(reader, writer):
 
         # Execute the parsed request
         try:
+            if not method:
+                raise MethodNotFoundError(method_name)
+
             _logger.debug('calling method: %s', method)
             ret = method.__call__(*args)
             if asyncio.iscoroutine(ret):
